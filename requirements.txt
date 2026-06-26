@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+aiohttp
+pydantic
+python-dotenv
+flask
+requests
+user_agent

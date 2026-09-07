@@ -732,7 +732,7 @@ class ShopifyCheckoutSession:
         submit_vars = {
             'input': {
                 'sessionInput': {'sessionToken': self.sst}, 'queueToken': self.queueToken,
-                ''discounts': {'lines': [], 'acceptUnexpectedDiscounts': True},
+                'discounts': {'lines': [], 'acceptUnexpectedDiscounts': True},
                 'delivery': {
                     'deliveryLines': [{
                         'destination': {

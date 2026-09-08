@@ -7,3 +7,4 @@ flask
 requests
 user_agent
 Brotli
+curl_cffi

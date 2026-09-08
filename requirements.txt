@@ -6,3 +6,4 @@ python-dotenv
 flask
 requests
 user_agent
+Brotli

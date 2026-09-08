@@ -811,7 +811,8 @@ class ShopifyCheckoutSession:
         }
         vault_headers = {
             'Content-Type': 'application/json', 'Accept': 'application/json', 'Origin': 'https://checkout.pci.shopifyinc.com',
-            'User-Agent': self.headers['User-Agent'], 'sec-fetch-site': 'same-origin',
+            'User-Agent': self.headers.get('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'),
+            'sec-fetch-site': 'same-origin',
         }
         if self.ident_sig: vault_headers['shopify-identification-signature'] = self.ident_sig
         

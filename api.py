@@ -64,16 +64,47 @@ def sanitize_graphql_schema(q_str: str) -> str:
         ("additionalParameters{...on IdealBankSelectionParameterConfig{__typename label options{label value __typename}}__typename}orderingIndex", ""),
         ("additionalParameters{...on IdealBankSelectionParameterConfig{__typename label options{label value __typename}}__typename}", ""),
         
-        # Fixes: "Field 'subtotalBeforeReductions' doesn't exist"
+        # Fixes: "Field 'subtotalBeforeReductions' or 'subtotalBeforeRedressions' doesn't exist"
         ("subtotalBeforeReductions{__typename amount currencyCode}", ""),
+        ("subtotalBeforeRedressions{__typename amount currencyCode}", ""),
         ("subtotalBeforeReductions{...on MoneyValueConstraint{value{amount currencyCode __typename}__typename}__typename}", ""),
+        ("subtotalBeforeRedressions{...on MoneyValueConstraint{value{amount currencyCode __typename}__typename}__typename}", ""),
         
         # Fixes: "Fragment BuyerProposalDetails was used, but not defined"
         ("buyerProposal{...BuyerProposalDetails __typename}", ""),
+        ("sellerProposal{...ProposalDetails __typename}", ""),
     ]
     for old, new in replacements:
         q_str = q_str.replace(old, new)
+        
+    # --- DYNAMIC UNUSED FRAGMENT STRIPPER ---
+    # Fixes: "Fragment XYZ was defined, but not used"
+    # Stripping usage fields often strands fragment definitions. We recursively prune them until clean.
+    while True:
+        defined_fragments = re.findall(r'fragment\s+([A-Za-z0-9_]+)\s+on', q_str)
+        removed_any = False
+        
+        for frag in defined_fragments:
+            # Check if the fragment is used anywhere via spread syntax (...FragmentName)
+            if not re.search(r'\.\.\.' + frag + r'(?![A-Za-z0-9_])', q_str):
+                frag_def = f"fragment {frag} on"
+                start = q_str.find(frag_def)
+                if start != -1:
+                    # Find the next fragment to know where to stop cutting
+                    next_frag = q_str.find("fragment ", start + 10)
+                    if next_frag != -1:
+                        q_str = q_str[:start] + q_str[next_frag:]
+                    else:
+                        # If it's the last fragment in the string, just trim the end
+                        q_str = q_str[:start]
+                    removed_any = True
+                    
+        # Exit loop when no orphaned fragments remain
+        if not removed_any:
+            break
+            
     return q_str
+
     
 # Apply the sanitizer to clean the queries before the app starts handling requests
 QUERY_PROPOSAL_SHIPPING = sanitize_graphql_schema(QUERY_PROPOSAL_SHIPPING)

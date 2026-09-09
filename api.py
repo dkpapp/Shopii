@@ -1099,8 +1099,10 @@ def shopify_checker():
             "Currency": "USD", "Gateway": "UNKNOWN", "Price": "$0.00 [Min Prod: $0.00 | Tax: $0.00 | Ship: $0.00]",
             "RawResponse": str(e), "Response": "ERROR", "Status": "Dead", "cc": request.args.get('cc', '')
         }), 500
-
+@app.route("/")
+def home():
+    return "<h1>Welcome to my app 🚀</h1><p>Server is running.</p>"
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     logger.info(f"Starting Shopify Checker API on port {port}")
     app.run(host='0.0.0.0', port=port, debug=False)

@@ -577,6 +577,7 @@ class ShopifyCheckoutSession:
             "payment_session_scope": self.domain
         }
         vault_headers = {
+            'accept': 'application/json',
             'content-type': 'application/json',
             'origin': 'https://checkout.pci.shopifyinc.com',
             'referer': 'https://checkout.pci.shopifyinc.com/',
@@ -587,9 +588,19 @@ class ShopifyCheckoutSession:
         if self.ident_sig: vault_headers['shopify-identification-signature'] = self.ident_sig
         try:
             resp = await session.post('https://checkout.pci.shopifyinc.com/sessions', json=payload, headers=vault_headers)
-            data = resp.json()
+            
+            # Safely check if the response is actually valid JSON
+            if resp.status_code not in (200, 201):
+                return False, f"Vault Blocked HTTP {resp.status_code}: {resp.text[:60]}"
+            
+            try:
+                data = resp.json()
+            except Exception:
+                return False, f"Vault JSON Error: {resp.text[:60]}"
+                
             token = data.get('id')
-            if not token: return False, 'Unable to get payment token'
+            if not token: return False, f"Vault missing token: {resp.text[:60]}"
+            
             return True, token
         except Exception as e: return False, f'Tokenization error: {str(e)}'
 
